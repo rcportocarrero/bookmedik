@@ -1,0 +1,223 @@
+
+API_BASE_URL = "https://web.example.com"
+##################################################################
+Validación del cliente
+##################################################################
+	*******
+	- Method type: GET
+	- Consultar endpoint API_BASE_URL/medic/validate?dni=45381933
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+				"fullName": "Roy Cespedes Portocarrero",	
+			}
+		}
+		Response Error:
+		{
+			"messageError": "En estos momentos no podemos validar tus datos con Reniec.",
+			"code": 404,
+			"data" : {
+				"fullName": "",	
+			}
+		}
+
+	*****Ejemplo de consumo 
+ function consultaReniec(agent){
+    const documentNumber = agent.parameters.dni;
+    const access_token = 'apis-token-3151.lJgplUYkXIzkpOnu-guu8TllYv1Ucamc';
+
+    return axios.get(`https://api.apis.net.pe/v1/dni?numero=${documentNumber}`, {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }}).then((result) => {
+         agent.setContext({
+          name: 'documento-context',
+          lifespan: 5,
+          parameters: { numeroDocumento: documentNumber }
+        });
+        agent.add(`Hola `+ result.data.nombres+" "+ result.data.apellidoPaterno + " ¿en qué podemos ayudarte hoy? ");
+    });
+  }
+
+##################################################################
+Crear cita por especialidad
+##################################################################
+	******* SELECT * FROM bookmedik.category;
+	- Method type: GET
+	- Consultar endpoint API_BASE_URL/medic/specialties-list
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+			  "specialtieslist": [
+				"Cardiología",
+				"Pediatría",
+				"Otorrino",
+			  ]
+			}
+		}
+	*******SELECT * FROM bookmedik.reservation;  Stored procedure 
+		- Consultar endpoint API_BASE_URL/medic/specialists?name=Cardiología&date=05-28
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" :  {
+			  "specialists": [
+				"Pedro Rivas",
+				"Juan Valdéz",
+				"Luis Ángeles",
+			  ]
+			}
+		}
+
+		- Consultar endpoint API_BASE_URL/medic/specialist?name=Juan Valdéz
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" :  {
+			  "hoursAvailable": [
+				"09:00",
+				"10:00",
+				"11:00",
+				"14:00",
+				"15:00"
+			  ]
+			}			
+		}
+
+	- Method type: POST
+	- Consultar endpoint API_BASE_URL/medic/reserve
+		Body request json
+		{
+			"date": "",
+			"hour": "",
+			"dni": "",
+			"specialties": "",
+			"specialist":""
+		}
+		Response OK:
+		{
+			"messageError": "Su reserva ha sido generada, puede pagar mediante pagoefectivo mediante con el código 789564",
+			"code": 200,
+			"data" : {
+				"paymentCode": "789564",	
+			}
+		}
+
+
+##################################################################
+Consulta de familiar internado
+##################################################################
+	
+	- Method type: GET
+	- Consultar endpoint API_BASE_URL/medic/search-patient?
+=45381933
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+				"fullName": 	"Roy Cespedes Portocarrero",
+				"state":	"en observación"
+			}
+		}
+
+
+
+##################################################################
+Consultar recetas médicas
+##################################################################
+		
+	- Method type: GET
+	- Consultar endpoint API_BASE_URL/medic/find-recipe?dni=45381933
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+				"detail": [
+					"Paracetamol, cada 12horas por 3 días",
+					"Kitadol, cada 8 horas por 5 días",
+				],
+				"date" : "25-05-2023"
+			}
+		}		
+
+##################################################################
+Consultar recetas médicas
+##################################################################
+	
+	- Method type: GET
+	- Consultar endpoint API_BASE_URL/medic/find-diagnosis?dni=45381933
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+				"detail": [
+					"Reumatitis aguda",
+				],
+				"date" : "25-05-2023"
+			}
+		}		
+
+
+##################################################################
+Formas de pago
+##################################################################
+	
+	- Method type: GET
+	- Consultar endpoint API_BASE_URL/medic/payment-list
+		Response OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+				"detail": [
+					" - Yape al número 987654321",
+					" - Plin al número 987654321",
+					" - Pagoefectivo",
+					" - Transferencias bancarias a los números "
+				],
+			}
+		}		
+
+
+##################################################################
+Afiliarse a plan de salud
+##################################################################
+	
+	- Method type: GET
+	- Consultar endpoint API_BASE_URL/medic/health-plans
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+				"detail": [
+					" Plan Luren base",
+					" Plan Luren familiar",
+					" Plan Luren Premium",
+				],
+			}
+		}		
+
+	- Method type: POST
+	- Consultar endpoint API_BASE_URL/medic/health-plans
+		Body request json
+		{
+			"plan": "Plan base",
+			"dni": "45381933",
+		}
+		Reponse OK:
+		{
+			"messageError": "",
+			"code": 200,
+			"data" : {
+				"detail": "Se registró el interés de afiliación para el Plan base"	
+			}
+		}
